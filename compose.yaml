@@ -5,7 +5,8 @@ services:
       dockerfile: apps/web/Dockerfile.dev
     init: true
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api}
+      CI: "true"
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api/v1}
     ports:
       - "${WEB_PORT:-5173}:5173"
     volumes:
@@ -22,6 +23,7 @@ services:
       dockerfile: apps/api/Dockerfile.dev
     init: true
     environment:
+      CI: "true"
       NODE_ENV: development
       PORT: 3000
       WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:5173}
@@ -30,6 +32,11 @@ services:
       DATABASE_NAME: ${POSTGRES_DB:-genesis_plus}
       DATABASE_USER: ${POSTGRES_USER:-genesis}
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-genesis}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
+      DEFAULT_ADMIN_NAME: ${DEFAULT_ADMIN_NAME:-}
+      DEFAULT_ADMIN_EMAIL: ${DEFAULT_ADMIN_EMAIL:-}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-}
     ports:
       - "${API_PORT:-3000}:3000"
     volumes:
@@ -45,7 +52,7 @@ services:
           "CMD",
           "node",
           "-e",
-          "fetch('http://localhost:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+          "fetch('http://localhost:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
         ]
       interval: 5s
       timeout: 3s
@@ -64,7 +71,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-genesis} -d ${POSTGRES_DB:-genesis_plus}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-genesis} -d ${POSTGRES_DB:-genesis_plus}",
+        ]
       interval: 5s
       timeout: 5s
       retries: 10

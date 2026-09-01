@@ -6,7 +6,7 @@ O projeto reúne uma aplicação web em React, uma API em NestJS e PostgreSQL, c
 
 ## Tecnologias
 
-- React, TypeScript e Vite
+- React, TypeScript, Vite e Tailwind CSS
 - NestJS, TypeORM e Swagger
 - PostgreSQL
 - Turborepo e pnpm workspaces
@@ -27,5 +27,6 @@ genesis+/
 
 ## Documentação
 
-Consulte o [Guia de instalação e uso](docs/GUIA.md) para configurar o ambiente, iniciar o projeto e conhecer os comandos disponíveis.
+Consulte o [Guia de instalação e uso](docs/GUIA.md) para configurar o ambiente e a
+[arquitetura](docs/architecture.md) para conhecer as decisões técnicas do projeto.
 # genesis-

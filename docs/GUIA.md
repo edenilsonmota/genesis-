@@ -1,8 +1,8 @@
 # Guia de instalação e uso
 
-Este guia apresenta duas formas de executar o Genesis+: completamente em containers ou com Node.js local e apenas o PostgreSQL no Docker.
+O Genesis+ é executado integralmente em containers Docker. Não é necessário instalar Node.js ou pnpm na máquina hospedeira.
 
-## Opção recomendada: tudo no Docker
+## Execução com Docker
 
 ### Requisito
 
@@ -10,22 +10,27 @@ Este guia apresenta duas formas de executar o Genesis+: completamente em contain
 
 ### Instalação
 
-Na raiz do projeto, crie o arquivo de configuração local:
+Na raiz do projeto, crie o arquivo de configuração do ambiente:
 
 ```bash
 cp .env.example .env
 ```
 
-Construa as imagens e inicie todos os serviços:
-
-```bash
-docker compose up --build
-```
-
-Para executar em segundo plano:
+Construa as imagens e inicie todos os serviços em segundo plano:
 
 ```bash
 docker compose up -d --build
+```
+
+Na primeira execução após uma alteração nas dependências, o pnpm pode atualizar
+automaticamente os volumes de `node_modules` dos containers. O Compose define o
+ambiente não interativo necessário para essa atualização.
+
+Prepare o banco e crie o administrador inicial:
+
+```bash
+docker compose exec api pnpm --filter @genesis-plus/api migration:run
+docker compose exec api pnpm --filter @genesis-plus/api admin:bootstrap
 ```
 
 O código-fonte é montado nos containers. Alterações no React e no NestJS são recarregadas automaticamente durante o desenvolvimento.
@@ -47,75 +52,66 @@ docker compose down --volumes
 
 > Esse último comando remove o volume do banco e seus dados. Use-o apenas quando quiser recriar o banco do zero.
 
-## Alternativa: Node.js local
+## Endereços expostos pelos containers
 
-Esta opção executa React e NestJS diretamente na máquina e mantém somente o PostgreSQL no Docker.
-
-### Requisitos
-
-- Node.js 22 ou superior
-- pnpm 11 ou superior
-- Docker com Docker Compose
-
-### Instalação
-
-```bash
-corepack enable
-pnpm install
-cp .env.example .env
-cp apps/api/.env.example apps/api/.env
-cp apps/web/.env.example apps/web/.env
-pnpm db:up
-pnpm dev
-```
-
-## Endereços locais
-
-| Serviço | Endereço |
-| --- | --- |
-| Aplicação web | http://localhost:5173 |
-| API | http://localhost:3000/api |
-| Health check | http://localhost:3000/api/health |
-| Swagger | http://localhost:3000/docs |
-| PostgreSQL | localhost:5432 |
+| Serviço       | Endereço                     |
+| ------------- | ---------------------------- |
+| Aplicação web | http://localhost:5173        |
+| API           | http://localhost:3000/api/v1 |
+| Health check  | http://localhost:3000/health |
+| Swagger       | http://localhost:3000/docs   |
+| PostgreSQL    | localhost:5432               |
 
 ## Variáveis de ambiente
 
 As configurações gerais do Docker ficam no arquivo `.env`, criado a partir de `.env.example`.
 
-| Variável | Valor padrão | Descrição |
-| --- | --- | --- |
-| `POSTGRES_DB` | `genesis_plus` | Nome do banco |
-| `POSTGRES_USER` | `genesis` | Usuário do banco |
-| `POSTGRES_PASSWORD` | `genesis` | Senha local do banco |
-| `POSTGRES_PORT` | `5432` | Porta exposta do PostgreSQL |
-| `API_PORT` | `3000` | Porta exposta da API |
-| `WEB_PORT` | `5173` | Porta exposta do frontend |
-| `WEB_ORIGIN` | `http://localhost:5173` | Origem permitida pelo CORS |
-| `VITE_API_URL` | `http://localhost:3000/api` | API utilizada pelo navegador |
+| Variável            | Valor padrão                   | Descrição                                                           |
+| ------------------- | ------------------------------ | ------------------------------------------------------------------- |
+| `POSTGRES_DB`       | `genesis_plus`                 | Nome do banco                                                       |
+| `POSTGRES_USER`     | `genesis`                      | Usuário do banco                                                    |
+| `POSTGRES_PASSWORD` | `genesis`                      | Senha do banco no ambiente Docker                                   |
+| `POSTGRES_PORT`     | `5432`                         | Porta exposta do PostgreSQL                                         |
+| `API_PORT`          | `3000`                         | Porta exposta da API                                                |
+| `WEB_PORT`          | `5173`                         | Porta exposta do frontend                                           |
+| `WEB_ORIGIN`        | `http://localhost:5173`        | Origem permitida pelo CORS                                          |
+| `VITE_API_URL`      | `http://localhost:3000/api/v1` | API utilizada pelo navegador                                        |
+| `JWT_SECRET`        | sem padrão                     | Segredo aleatório com no mínimo 32 caracteres                       |
+| `JWT_EXPIRES_IN`    | `15m`                          | Expiração do access token                                           |
+| `DEFAULT_ADMIN_*`   | sem padrão seguro              | Nome, e-mail e senha (mínimo 8 caracteres) do administrador inicial |
 
 Não versione arquivos `.env` ou credenciais reais.
 
-## Comandos de desenvolvimento local
+## Comandos de desenvolvimento
 
 ```bash
-pnpm dev           # inicia web e API com hot reload
-pnpm build         # gera o build de todos os aplicativos
-pnpm lint          # executa o ESLint
-pnpm test          # executa os testes
-pnpm typecheck     # verifica os tipos TypeScript
-pnpm format        # formata os arquivos com Prettier
-pnpm format:check  # verifica a formatação sem alterar arquivos
-pnpm db:up         # inicia somente o PostgreSQL
-pnpm db:logs       # acompanha os logs do PostgreSQL
-pnpm db:down       # encerra os serviços do Compose
+docker compose up -d --build
+docker compose ps
+docker compose logs -f
+docker compose logs -f api
+docker compose exec api pnpm --filter @genesis-plus/api migration:run
+docker compose exec api pnpm --filter @genesis-plus/api admin:bootstrap
+docker compose exec api pnpm --filter @genesis-plus/api test
+docker compose exec api pnpm --filter @genesis-plus/api lint
+docker compose exec api pnpm --filter @genesis-plus/api typecheck
+docker compose exec web pnpm --filter @genesis-plus/web test
+docker compose exec web pnpm --filter @genesis-plus/web lint
+docker compose exec web pnpm --filter @genesis-plus/web typecheck
+docker compose down
 ```
 
 ## Banco de dados
 
-A API utiliza TypeORM. No ambiente de desenvolvimento, `synchronize` está habilitado para facilitar a criação inicial das tabelas.
+A API utiliza TypeORM com migrations versionadas e `synchronize` desabilitado em todos os ambientes. Execute as migrations e então o bootstrap do administrador.
 
-Em produção, desabilite a sincronização automática e utilize migrations versionadas. Nunca use `synchronize: true` como estratégia de atualização de um banco de produção.
+## Autenticação
+
+- `POST /api/v1/auth/login` recebe `email` e `password`.
+- `GET /api/v1/auth/me` exige `Authorization: Bearer <token>`.
+
+Não há cadastro público, refresh token ou blacklist de logout nesta etapa. Para sair, o cliente descarta o access token.
+
+O esquema do banco deve ser alterado exclusivamente por migrations versionadas.
 
 ## Problemas comuns
 
@@ -140,7 +136,7 @@ docker compose ps
 docker compose logs postgres api
 ```
 
-No Docker, o hostname do banco deve ser `postgres`. Na execução local, deve ser `localhost`.
+Dentro da rede do Compose, o hostname do banco deve ser `postgres`.
 
 ### Recriar o ambiente Docker
 
