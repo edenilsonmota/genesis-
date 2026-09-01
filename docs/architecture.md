@@ -24,6 +24,8 @@ src/
 
 Componentes começam dentro da feature e só migram para `components` quando usados por pelo menos duas features. Nomes de componentes e páginas usam PascalCase, hooks começam com `use`, e demais módulos usam camelCase. Não serão criados arquivos que apenas repassem uma chamada.
 
+Selects com listas não triviais devem oferecer pesquisa e navegação acessível por teclado por meio do componente compartilhado `SearchableSelect`, baseado no Combobox do Headless UI e estilizado com Tailwind CSS. Selects pequenos e fixos, como um estado binário, podem permanecer nativos.
+
 A autenticação ficará em um provider/hook da feature `auth`; o token será mantido inicialmente em memória (persistência será decidida junto da experiência de sessão). O cliente HTTP central traduzirá o formato de erro da API e reagirá a `401`; erros de campo ficam próximos ao formulário. Rotas protegidas exigirão autenticação e, futuramente, permissões efetivas. A interface poderá ocultar ações sem permissão, mas o backend continuará sendo a autoridade.
 
 ## Backend
@@ -42,7 +44,13 @@ Testes unitários cobrem regras de autenticação e o bootstrap do administrador
 
 O papel `admin` é global e fixo, associado por `user_global_roles`, logo continua válido mesmo após o vínculo com membro. Os demais papéis serão atribuídos no futuro no contexto da igreja pela associação `(user_id, church_id, role_id)`, e suas permissões serão a união dos papéis daquele contexto. O cliente informará a igreja da operação pela rota ou por um contexto explícito a definir; login não exige escolher igreja.
 
-A entidade `Member` contém apenas a base necessária ao vínculo nesta etapa. `church_id` será convertido em relação TypeORM quando o módulo de igrejas for implementado.
+A entidade `Member` contém a base necessária ao vínculo com usuário e pertence obrigatoriamente a uma Igreja.
+
+## Áreas e igrejas
+
+Estados e cidades são referências locais identificadas pelos códigos oficiais do IBGE. Áreas definem nome e `city_id`; a UF é derivada da cidade. Igrejas pertencem obrigatoriamente a uma Área e armazenam nome, CEP, rua, bairro, número, complemento e status. Rua e bairro são obtidos pelo backend no ViaCEP; o código IBGE do município retornado precisa coincidir com a cidade da Área. Número e complemento são informados pelo administrador. Nomes de Área são únicos sem diferenciar maiúsculas e minúsculas, assim como nomes de Igreja dentro de cada Área.
+
+A futura lista de usuários de uma Igreja será derivada dos vínculos de papéis por Igreja. Ela não é armazenada diretamente na entidade `Church`.
 
 ## Decisões específicas da stack
 

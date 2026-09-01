@@ -7,6 +7,9 @@ import { AuthModule } from "./auth/auth.module";
 import { MembersModule } from "./members/members.module";
 import { RolesModule } from "./roles/roles.module";
 import { UsersModule } from "./users/users.module";
+import { AreasModule } from "./areas/areas.module";
+import { ChurchesModule } from "./churches/churches.module";
+import { GeographyModule } from "./geography/geography.module";
 
 @Module({
   imports: [
@@ -31,6 +34,9 @@ import { UsersModule } from "./users/users.module";
     RolesModule,
     MembersModule,
     AuthModule,
+    AreasModule,
+    ChurchesModule,
+    GeographyModule,
   ],
   controllers: [HealthController],
 })

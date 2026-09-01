@@ -2,10 +2,12 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { User } from "../../users/entities/user.entity";
+import { Church } from "../../churches/entities/church.entity";
 
 @Entity("members")
 export class Member {
@@ -14,6 +16,10 @@ export class Member {
 
   @Column({ name: "church_id", type: "uuid" })
   churchId: string;
+
+  @ManyToOne(() => Church, { onDelete: "RESTRICT" })
+  @JoinColumn({ name: "church_id" })
+  church: Church;
 
   @Column()
   name: string;

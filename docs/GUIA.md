@@ -30,6 +30,7 @@ Prepare o banco e crie o administrador inicial:
 
 ```bash
 docker compose exec api pnpm --filter @genesis-plus/api migration:run
+docker compose exec api pnpm --filter @genesis-plus/api geography:sync
 docker compose exec api pnpm --filter @genesis-plus/api admin:bootstrap
 ```
 
@@ -90,6 +91,7 @@ docker compose ps
 docker compose logs -f
 docker compose logs -f api
 docker compose exec api pnpm --filter @genesis-plus/api migration:run
+docker compose exec api pnpm --filter @genesis-plus/api geography:sync
 docker compose exec api pnpm --filter @genesis-plus/api admin:bootstrap
 docker compose exec api pnpm --filter @genesis-plus/api test
 docker compose exec api pnpm --filter @genesis-plus/api lint

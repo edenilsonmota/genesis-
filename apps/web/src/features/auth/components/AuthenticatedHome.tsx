@@ -1,8 +1,10 @@
 import { useAuth } from "../context/useAuth";
+import { AdminDashboard } from "../../admin/components/AdminDashboard";
 
 export function AuthenticatedHome() {
   const { user, logout } = useAuth();
   if (!user) return null;
+  if (user.isAdmin) return <AdminDashboard />;
   return (
     <main className="grid min-h-screen place-items-center bg-[radial-gradient(circle_at_50%_10%,#d8eadf,#f5f2e9_55%)] p-6">
       <section className="w-full max-w-[620px] rounded-3xl border border-[#d2ddd6] bg-[#fffdf8] p-[clamp(32px,7vw,64px)] shadow-[0_30px_80px_#173a3018]">
