@@ -35,6 +35,12 @@ export class User {
   @Column({ type: "enum", enum: UserStatus, default: UserStatus.ACTIVE })
   status: UserStatus;
 
+  @Column({ name: "must_change_password", default: false })
+  mustChangePassword: boolean;
+
+  @Column({ name: "last_login_at", type: "timestamp", nullable: true })
+  lastLoginAt: Date | null;
+
   @ManyToMany(() => Role, { eager: true })
   @JoinTable({ name: "user_global_roles" })
   roles: Role[];

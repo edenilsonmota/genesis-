@@ -13,6 +13,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         setAccessToken(token);
         setUser(authenticatedUser);
       },
+      updateUser: setUser,
       logout: () => {
         setAccessToken(null);
         setUser(null);

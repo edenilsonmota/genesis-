@@ -8,6 +8,7 @@ export type AuthenticatedUser = {
   isAdmin: boolean;
   roles: string[];
   permissions: string[];
+  mustChangePassword: boolean;
   member: MemberSummary | null;
 };
 

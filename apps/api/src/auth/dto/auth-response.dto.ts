@@ -33,6 +33,9 @@ export class AuthenticatedUserDto {
   @ApiProperty({ type: [String] })
   permissions: string[];
 
+  @ApiProperty()
+  mustChangePassword: boolean;
+
   @ApiPropertyOptional({ type: MemberSummaryDto, nullable: true })
   member: MemberSummaryDto | null;
 }

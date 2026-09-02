@@ -1,10 +1,11 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
-import { compare } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 import { User, UserStatus } from "../users/entities/user.entity";
 import { UsersService } from "../users/users.service";
 import { LoginDto } from "./dto/login.dto";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 
 @Injectable()
 export class AuthService {
@@ -27,6 +28,7 @@ export class AuthService {
     }
 
     const accessToken = await this.jwt.signAsync({ sub: user.id });
+    await this.users.recordLogin(user);
     return {
       accessToken,
       tokenType: "Bearer",
@@ -45,6 +47,7 @@ export class AuthService {
       isAdmin: roles.includes("admin"),
       roles,
       permissions: [],
+      mustChangePassword: user.mustChangePassword,
       member: user.member
         ? {
             id: user.member.id,
@@ -53,5 +56,13 @@ export class AuthService {
           }
         : null,
     };
+  }
+
+  async changePassword(user: User, dto: ChangePasswordDto) {
+    const account = await this.users.findByEmailWithPassword(user.email);
+    if (!account || !(await compare(dto.currentPassword, account.passwordHash)))
+      throw new UnauthorizedException("Senha atual inválida");
+    await this.users.changePassword(account, await hash(dto.newPassword, 12));
+    return { message: "Senha alterada com sucesso" };
   }
 }

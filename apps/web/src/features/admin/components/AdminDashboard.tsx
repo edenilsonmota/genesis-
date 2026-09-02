@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getApiErrorMessage } from "../../../lib/http";
 import { SearchableSelect } from "../../../components/forms/SearchableSelect";
+import { TopNavigation } from "../../../layouts/TopNavigation";
+import {
+  canPerform,
+  navigationCatalog,
+  type AdminView,
+} from "../../../app/navigation/navigation";
 import { useAuth } from "../../auth/context/useAuth";
 import {
   createArea,
@@ -12,12 +19,25 @@ import {
   lookupPostalCode,
 } from "../api/adminApi";
 import type { Area, Church, City, PostalAddress, State } from "../types/admin";
+import { UserGroupsPage } from "../../user-groups/components/UserGroupsPage";
 
 const inputClass =
   "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100";
 export function AdminDashboard() {
   const { accessToken, user, logout } = useAuth();
-  const [tab, setTab] = useState<"areas" | "churches">("areas");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const tab: AdminView = location.pathname.endsWith("/user-groups")
+    ? "user-groups"
+    : location.pathname.endsWith("/churches")
+      ? "churches"
+      : "areas";
+  const navigateTo = (view: AdminView) => {
+    const item = navigationCatalog
+      .flatMap((category) => category.items)
+      .find((candidate) => candidate.id === view);
+    if (item) navigate(item.path);
+  };
   const [areas, setAreas] = useState<Area[]>([]);
   const [churches, setChurches] = useState<Church[]>([]);
   const [states, setStates] = useState<State[]>([]);
@@ -110,40 +130,23 @@ export function AdminDashboard() {
 
   return (
     <main className="min-h-screen bg-slate-100 text-slate-800">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <div>
-            <strong className="font-display text-xl text-emerald-900">
-              Genesis+
-            </strong>
-            <p className="text-sm text-slate-500">Administração</p>
-          </div>
-          <div className="flex items-center gap-4 text-sm">
-            <span>{user?.name}</span>
-            <button className="font-semibold text-emerald-800" onClick={logout}>
-              Sair
-            </button>
-          </div>
-        </div>
-      </header>
+      {user && (
+        <TopNavigation
+          user={user}
+          currentView={tab}
+          onNavigate={navigateTo}
+          onLogout={logout}
+        />
+      )}
       <div className="mx-auto max-w-6xl p-5">
-        <nav className="mb-6 flex gap-2">
-          {(["areas", "churches"] as const).map((item) => (
-            <button
-              key={item}
-              className={`rounded-lg px-4 py-2 font-semibold ${tab === item ? "bg-emerald-800 text-white" : "bg-white"}`}
-              onClick={() => setTab(item)}
-            >
-              {item === "areas" ? "Áreas" : "Igrejas"}
-            </button>
-          ))}
-        </nav>
         {message && (
           <p className="mb-5 rounded-lg border border-slate-200 bg-white p-3 text-sm">
             {message}
           </p>
         )}
-        {tab === "areas" ? (
+        {tab === "user-groups" ? (
+          <UserGroupsPage />
+        ) : tab === "areas" ? (
           <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
             <form
               className="space-y-4 rounded-xl bg-white p-5 shadow-sm"
@@ -202,7 +205,11 @@ export function AdminDashboard() {
                 disabled={!selectedStateId}
               />
               <button
-                disabled={!areaForm.cityId}
+                disabled={
+                  !areaForm.cityId ||
+                  !user ||
+                  !canPerform(user, "areas", "create")
+                }
                 className="w-full rounded-lg bg-emerald-800 py-2.5 font-bold text-white disabled:opacity-50"
               >
                 Cadastrar área
@@ -314,7 +321,10 @@ export function AdminDashboard() {
                   }
                 />
               </label>
-              <button className="w-full rounded-lg bg-emerald-800 py-2.5 font-bold text-white">
+              <button
+                disabled={!user || !canPerform(user, "churches", "create")}
+                className="w-full rounded-lg bg-emerald-800 py-2.5 font-bold text-white disabled:opacity-50"
+              >
                 Cadastrar igreja
               </button>
             </form>

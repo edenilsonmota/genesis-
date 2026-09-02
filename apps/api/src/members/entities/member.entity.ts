@@ -24,6 +24,15 @@ export class Member {
   @Column()
   name: string;
 
+  @Column({ unique: true, length: 11 })
+  cpf: string;
+
+  @Column({ type: "varchar", nullable: true })
+  email: string | null;
+
+  @Column({ default: "active" })
+  status: string;
+
   @Column({ name: "user_id", type: "uuid", nullable: true, unique: true })
   userId: string | null;
 

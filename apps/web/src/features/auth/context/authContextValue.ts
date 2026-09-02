@@ -5,6 +5,7 @@ export type AuthContextValue = {
   accessToken: string | null;
   user: AuthenticatedUser | null;
   authenticate: (token: string, user: AuthenticatedUser) => void;
+  updateUser: (user: AuthenticatedUser) => void;
   logout: () => void;
 };
 

@@ -16,3 +16,17 @@ export async function getCurrentUser(accessToken: string) {
     })
   ).data;
 }
+
+export async function changePassword(
+  accessToken: string,
+  currentPassword: string,
+  newPassword: string,
+) {
+  return (
+    await http.post<{ message: string }>(
+      "/auth/change-password",
+      { currentPassword, newPassword },
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    )
+  ).data;
+}

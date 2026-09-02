@@ -10,6 +10,9 @@ import { UsersModule } from "./users/users.module";
 import { AreasModule } from "./areas/areas.module";
 import { ChurchesModule } from "./churches/churches.module";
 import { GeographyModule } from "./geography/geography.module";
+import { PermissionsModule } from "./permissions/permissions.module";
+import { UserGroupsModule } from "./user-groups/user-groups.module";
+import { DepartmentsModule } from "./departments/departments.module";
 
 @Module({
   imports: [
@@ -37,6 +40,9 @@ import { GeographyModule } from "./geography/geography.module";
     AreasModule,
     ChurchesModule,
     GeographyModule,
+    PermissionsModule,
+    UserGroupsModule,
+    DepartmentsModule,
   ],
   controllers: [HealthController],
 })

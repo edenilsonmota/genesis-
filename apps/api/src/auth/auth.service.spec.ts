@@ -9,6 +9,8 @@ import { AuthService } from "./auth.service";
 describe("AuthService", () => {
   const users = {
     findByEmailWithPassword: jest.fn(),
+    recordLogin: jest.fn(),
+    changePassword: jest.fn(),
   } as unknown as UsersService;
   const jwt = {
     signAsync: jest.fn().mockResolvedValue("signed-token"),
@@ -29,6 +31,7 @@ describe("AuthService", () => {
       status,
       roles: [{ id: "role-id", name: "admin", fixed: true, description: null }],
       member: null,
+      mustChangePassword: false,
     } as User;
   }
 

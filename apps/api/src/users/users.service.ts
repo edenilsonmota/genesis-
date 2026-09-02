@@ -22,4 +22,14 @@ export class UsersService {
   findAuthenticatedById(id: string) {
     return this.users.findOne({ where: { id }, relations: { member: true } });
   }
+
+  async recordLogin(user: User) {
+    user.lastLoginAt = new Date();
+    await this.users.save(user);
+  }
+  async changePassword(user: User, passwordHash: string) {
+    user.passwordHash = passwordHash;
+    user.mustChangePassword = false;
+    await this.users.save(user);
+  }
 }

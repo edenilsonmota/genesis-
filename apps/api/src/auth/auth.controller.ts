@@ -23,6 +23,8 @@ import {
 } from "./dto/auth-response.dto";
 import { LoginDto } from "./dto/login.dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
+import { ChangePasswordDto } from "./dto/change-password.dto";
+import { AllowPasswordChange } from "./password-change.decorator";
 
 @ApiTags("auth")
 @Controller("auth")
@@ -50,5 +52,14 @@ export class AuthController {
   })
   me(@CurrentUser() user: User) {
     return this.auth.serializeUser(user);
+  }
+
+  @Post("change-password")
+  @UseGuards(JwtAuthGuard)
+  @AllowPasswordChange()
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  changePassword(@CurrentUser() user: User, @Body() dto: ChangePasswordDto) {
+    return this.auth.changePassword(user, dto);
   }
 }
