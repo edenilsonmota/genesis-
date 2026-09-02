@@ -20,6 +20,7 @@ import {
 } from "../api/adminApi";
 import type { Area, Church, City, PostalAddress, State } from "../types/admin";
 import { UserGroupsPage } from "../../user-groups/components/UserGroupsPage";
+import { MembersPage } from "../../members/components/MembersPage";
 
 const inputClass =
   "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100";
@@ -27,7 +28,9 @@ export function AdminDashboard() {
   const { accessToken, user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const tab: AdminView = location.pathname.endsWith("/user-groups")
+  const tab: AdminView = location.pathname.endsWith("/members")
+    ? "members"
+    : location.pathname.endsWith("/user-groups")
     ? "user-groups"
     : location.pathname.endsWith("/churches")
       ? "churches"
@@ -144,7 +147,9 @@ export function AdminDashboard() {
             {message}
           </p>
         )}
-        {tab === "user-groups" ? (
+      {tab === "members" ? (
+        <MembersPage />
+      ) : tab === "user-groups" ? (
           <UserGroupsPage />
         ) : tab === "areas" ? (
           <div className="grid gap-6 lg:grid-cols-[360px_1fr]">

@@ -54,7 +54,9 @@ O papel `admin` é global e fixo, associado por `user_global_roles`, logo contin
 
 A tela “Grupos de usuários” é a interface administrativa dos usuários com acesso e dos cargos; “grupo” não é uma entidade duplicada. Conceder acesso parte obrigatoriamente de um membro existente, cria ou reutiliza sua credencial e grava igreja e cargos em uma única transação. Para uma nova credencial, o CPF normalizado é a senha inicial, armazenada apenas como hash, e `must_change_password` obriga sua substituição no primeiro acesso. Enquanto essa troca estiver pendente, o guard permite somente o endpoint de alteração da senha.
 
-A entidade `Member` contém a base necessária ao vínculo com usuário e pertence obrigatoriamente a uma Igreja.
+A entidade `Member` contém a base necessária ao vínculo com usuário. A participação em igrejas é derivada dos vínculos de cargo; `church_id` permanece apenas como referência primária opcional para compatibilidade com os registros existentes.
+
+O módulo de membros mantém dados pessoais normalizados (CPF, contato, nascimento, sexo e endereço) separados das credenciais. Um membro pode existir sem usuário; ao receber o primeiro cargo, a criação do usuário e dos vínculos ocorre na mesma transação. Os vínculos guardam situação e datas inicial/final para permitir histórico. Exclusão física é recusada quando há usuário ou igreja de referência; nesses casos utiliza-se inativação.
 
 ## Áreas e igrejas
 

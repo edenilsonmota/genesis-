@@ -4,7 +4,9 @@ import { canAccessItem, canPerform, navigationCatalog } from "./navigation";
 
 const user = (permissions: string[], isAdmin = false) =>
   ({ permissions, isAdmin }) as AuthenticatedUser;
-const areas = navigationCatalog[0].items[0];
+const areas = navigationCatalog
+  .flatMap((category) => category.items)
+  .find((item) => item.id === "areas")!;
 
 describe("navigation permissions", () => {
   it("shows an item only with its view permission", () => {

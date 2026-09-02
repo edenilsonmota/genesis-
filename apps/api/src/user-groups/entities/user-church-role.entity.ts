@@ -31,5 +31,7 @@ export class UserChurchRole {
   @JoinColumn({ name: "department_id" })
   department: Department | null;
   @Column({ default: "active" }) status: string;
+  @Column({ name: "started_at", type: "date", nullable: true }) startedAt: string | null;
+  @Column({ name: "ended_at", type: "date", nullable: true }) endedAt: string | null;
   @CreateDateColumn({ name: "created_at" }) createdAt: Date;
 }

@@ -1,7 +1,7 @@
 import type { AuthenticatedUser } from "../../features/auth/types/auth";
 
 export type PermissionAction = "view" | "create" | "update" | "delete";
-export type AdminView = "areas" | "churches" | "user-groups";
+export type AdminView = "areas" | "churches" | "members" | "user-groups";
 
 export type NavigationItem = {
   id: AdminView;
@@ -22,6 +22,13 @@ export const navigationCatalog: NavigationCategory[] = [
     id: "organization",
     label: "Organização",
     items: [
+      {
+        id: "members",
+        label: "Membros",
+        path: "/admin/members",
+        resource: "members",
+        permissions: { view: "members.view", create: "members.create", update: "members.update", delete: "members.delete" },
+      },
       {
         id: "areas",
         label: "Áreas",
