@@ -11,6 +11,7 @@ import {
   type SelectOption,
 } from "../../../components/forms/SearchableSelect";
 import { getApiErrorMessage } from "../../../lib/http";
+import { Button, FeatureTabs, PageHeader } from "../../../components/ui";
 import { listAreas, listChurches } from "../../admin/api/adminApi";
 import { useAuth } from "../../auth/context/useAuth";
 import {
@@ -165,37 +166,30 @@ export function UserGroupsPage() {
 
   return (
     <section>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold">
-            Grupos de usuários
-          </h1>
-          <p className="text-sm text-slate-500">
-            Usuários, cargos e permissões por igreja.
-          </p>
-        </div>
-        <button
-          className="rounded-lg bg-emerald-800 px-4 py-2 font-bold text-white"
-          onClick={() =>
-            tab === "users" ? setShowUserForm(true) : setShowRoleForm(true)
-          }
-        >
-          {tab === "users" ? "Adicionar usuário" : "Novo cargo"}
-        </button>
-      </div>
-      <div className="mb-5 flex gap-2 border-b">
-        <button
-          className={`px-4 py-2 font-semibold ${tab === "users" ? "border-b-2 border-emerald-700 text-emerald-800" : "text-slate-500"}`}
-          onClick={() => setTab("users")}
-        >
-          Usuários
-        </button>
-        <button
-          className={`px-4 py-2 font-semibold ${tab === "roles" ? "border-b-2 border-emerald-700 text-emerald-800" : "text-slate-500"}`}
-          onClick={() => setTab("roles")}
-        >
-          Cargos
-        </button>
+      <PageHeader
+        title="Grupos de usuários"
+        description="Usuários, cargos e permissões por igreja."
+        action={
+          <Button
+            variant="primary"
+            onClick={() =>
+              tab === "users" ? setShowUserForm(true) : setShowRoleForm(true)
+            }
+          >
+            {tab === "users" ? "Adicionar usuário" : "Novo cargo"}
+          </Button>
+        }
+      />
+      <div className="mb-5">
+        <FeatureTabs
+          label="Grupos de usuários"
+          value={tab}
+          onChange={setTab}
+          tabs={[
+            { id: "users", label: "Usuários" },
+            { id: "roles", label: "Cargos" },
+          ]}
+        />
       </div>
       {message && (
         <p className="mb-4 rounded-lg border bg-white p-3 text-sm">{message}</p>
@@ -215,13 +209,13 @@ export function UserGroupsPage() {
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Nome, CPF ou e-mail"
             />
-            <button
+            <Button
               type="button"
-              className="rounded-lg border px-4 font-semibold"
+              variant="secondary"
               onClick={() => void findMembers()}
             >
               Pesquisar
-            </button>
+            </Button>
           </div>
           {memberResults.length > 0 && (
             <SearchableSelect
@@ -276,7 +270,9 @@ export function UserGroupsPage() {
                 departmentId: "",
               });
               if (accessToken)
-                void listDepartments(accessToken, churchId).then(setDepartments);
+                void listDepartments(accessToken, churchId).then(
+                  setDepartments,
+                );
             }}
           />
           {accessForm.churchId && (
@@ -328,23 +324,23 @@ export function UserGroupsPage() {
             </div>
           </fieldset>
           <div className="flex gap-2">
-            <button
+            <Button
+              type="submit"
+              variant="primary"
               disabled={
                 !selectedMember ||
                 !accessForm.churchId ||
                 !accessForm.roleIds.length
               }
-              className="rounded-lg bg-emerald-800 px-4 py-2 font-bold text-white disabled:opacity-50"
             >
               Confirmar acesso
-            </button>
-            <button
-              type="button"
-              className="rounded-lg border px-4"
+            </Button>
+            <Button
+              variant="secondary"
               onClick={() => setShowUserForm(false)}
             >
               Cancelar
-            </button>
+            </Button>
           </div>
         </form>
       )}
@@ -475,19 +471,19 @@ export function UserGroupsPage() {
             </table>
           </div>
           <div className="flex gap-2">
-            <button
+            <Button
+              type="submit"
+              variant="primary"
               disabled={!roleForm.name || !roleForm.areaId}
-              className="rounded-lg bg-emerald-800 px-4 py-2 font-bold text-white disabled:opacity-50"
             >
               Criar cargo
-            </button>
-            <button
-              type="button"
-              className="rounded-lg border px-4"
+            </Button>
+            <Button
+              variant="secondary"
               onClick={() => setShowRoleForm(false)}
             >
               Cancelar
-            </button>
+            </Button>
           </div>
         </form>
       )}
@@ -514,7 +510,9 @@ export function UserGroupsPage() {
                   <strong className="text-sm">{church.name}</strong>
                   <ul className="ml-5 list-disc text-sm text-slate-600">
                     {church.roles.map((role) => (
-                      <li key={`${role.id}-${role.department?.id ?? "general"}`}>
+                      <li
+                        key={`${role.id}-${role.department?.id ?? "general"}`}
+                      >
                         {role.name}
                         {role.department && ` — ${role.department.name}`}
                         {role.isAdministrator && " — Administrador"}
@@ -524,23 +522,21 @@ export function UserGroupsPage() {
                 </div>
               ))}
               <div className="mt-4 flex gap-2">
-                <button className="text-sm font-semibold text-emerald-800">
-                  Visualizar
-                </button>
-                <button
+                <Button variant="view">Visualizar</Button>
+                <Button
+                  variant="edit"
                   disabled
                   title="Funcionalidade disponível em uma próxima etapa."
-                  className="text-sm text-slate-400"
                 >
                   Editar
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="danger"
                   disabled
                   title="Funcionalidade disponível em uma próxima etapa."
-                  className="text-sm text-slate-400"
                 >
                   Remover acesso
-                </button>
+                </Button>
               </div>
             </article>
           ))}
@@ -575,16 +571,14 @@ export function UserGroupsPage() {
                   <td>{role.isAdministrator ? "Sim" : "Não"}</td>
                   <td>{role.status === "active" ? "Ativo" : "Inativo"}</td>
                   <td>
-                    <button className="font-semibold text-emerald-800">
-                      Visualizar
-                    </button>{" "}
-                    <button
+                    <Button variant="view">Visualizar</Button>{" "}
+                    <Button
+                      variant="edit"
                       disabled
                       title="Funcionalidade disponível em uma próxima etapa."
-                      className="text-slate-400"
                     >
                       Editar
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))}

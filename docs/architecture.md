@@ -26,11 +26,45 @@ Componentes começam dentro da feature e só migram para `components` quando usa
 
 Selects com listas não triviais devem oferecer pesquisa e navegação acessível por teclado por meio do componente compartilhado `SearchableSelect`, baseado no Combobox do Headless UI e estilizado com Tailwind CSS. Selects pequenos e fixos, como um estado binário, podem permanecer nativos.
 
+### Responsividade
+
+Todas as telas e componentes devem possuir visualização adequada para dispositivos móveis desde sua implementação. Formulários, filtros, menus, tabelas e ações devem reorganizar-se em larguras reduzidas sem perda de funcionalidade. Tabelas extensas podem usar rolagem horizontal acompanhada de largura mínima legível; ações essenciais não podem depender apenas de hover. A validação de uma funcionalidade inclui conferir os layouts mobile e desktop.
+
+### Design system e padrões de interface
+
+Novas features devem reutilizar os componentes de `src/components/ui`. Não se deve copiar combinações de classes Tailwind para recriar um padrão já existente. Se uma necessidade recorrente ainda não estiver coberta, o componente compartilhado deve ser ampliado antes de criar uma variação local.
+
+- `PageHeader`: título, descrição curta e uma ação principal opcional. Deve iniciar todas as páginas administrativas.
+- `FeatureTabs`: padrão oficial para subabas dentro da mesma página. Usa linha inferior, verde na opção ativa, rolagem horizontal no mobile e semântica acessível de tabs. Subabas representam partes relacionadas de uma feature; não devem criar uma nova entrada no menu principal.
+- `FilterPanel`: painel branco com borda, sombra leve, espaçamento uniforme e grade responsiva. A ordem padrão é busca textual, filtros de escopo, situação e período. Alterar qualquer filtro retorna a paginação à primeira página. Filtros combináveis são enviados juntos ao backend.
+- `controlClass`: aparência única de `input`, `select` e `textarea`, com altura mínima, borda cinza e foco verde. `SearchableSelect` continua obrigatório para listas não triviais.
+- `Pagination`: sempre abaixo da listagem, mostrando total, página atual, total de páginas e botões Anterior/Próxima. A paginação de dados deve ser feita no backend.
+- `StatusBadge`: situação ativa em verde e inativa em cinza. Situações de alerta ou erro poderão ganhar variantes semânticas no componente.
+
+#### Cores e botões
+
+Todos os botões usam o componente `Button`, altura mínima de toque, foco visível e estado desabilitado consistente. As variantes são semânticas e não devem ser escolhidas apenas por preferência visual:
+
+| Variante | Uso | Aparência |
+| --- | --- | --- |
+| `primary` | Criar, salvar, confirmar e ação principal da página | Fundo verde escuro e texto branco |
+| `secondary` | Cancelar, voltar, paginação e ações neutras | Fundo branco e borda cinza |
+| `view` | Visualizar detalhes | Azul claro |
+| `edit` | Editar dados existentes | Âmbar claro |
+| `danger` | Excluir, remover acesso, inativar ou ação destrutiva | Vermelho claro |
+| `ghost` | Ação auxiliar de baixa ênfase | Fundo transparente e texto cinza |
+
+Uma área de ações deve seguir a ordem `Visualizar → Editar → Excluir/Inativar`. Ações destrutivas exigem confirmação explícita e mensagem que identifique o efeito. Botões indisponíveis permanecem desabilitados com explicação; não devem apenas desaparecer quando isso prejudicar a compreensão do fluxo. Uma página deve possuir no máximo uma ação `primary` em destaque por contexto.
+
+#### Paleta e superfícies
+
+Verde-esmeralda é a cor institucional e de ação principal; azul comunica consulta; âmbar comunica alteração; vermelho comunica risco; cinza-ardósia é usado em texto, bordas, estados neutros e ações secundárias. Páginas usam fundo `slate-100`, cartões usam branco com `rounded-xl`, borda discreta ou `shadow-sm`, títulos usam `font-display` e textos auxiliares usam `text-slate-500`. Cores semânticas não devem ser trocadas entre features.
+
 ### Navegação e permissões
 
 O menu principal é superior e orientado pelo catálogo tipado `navigationCatalog`. A hierarquia é Categoria → Item → Recurso → Ações. Categorias agrupam funcionalidades; itens possuem identificador e rota estáveis; cada recurso declara as permissões `view`, `create`, `update` e `delete` no formato `recurso.ação`.
 
-Exemplo: a categoria `organization` contém os itens `areas` e `churches`; o item `areas` mapeia `areas.view`, `areas.create`, `areas.update` e `areas.delete`. O menu exibe apenas itens com permissão `view`, as rotas devem aplicar a mesma regra e os controles de ação consultam a permissão correspondente. O administrador global ignora essas restrições.
+Exemplo: a categoria `organization` apresenta o item único “Áreas e igrejas”, reunindo os dois cadastros relacionados na mesma página por meio das subabas `Áreas` e `Igrejas`. Somente o conteúdo da subaba ativa é exibido. A união é apenas visual: os recursos continuam independentes e mantêm `areas.view/create/update/delete` e `churches.view/create/update/delete`. O item aparece quando o usuário pode visualizar pelo menos um dos recursos, enquanto cada formulário e ação consulta sua permissão específica. O administrador global ignora essas restrições.
 
 O catálogo do frontend organiza a experiência, mas não concede acesso. O backend é a autoridade e protege cada operação. A matriz de cargos é alimentada pelo catálogo de módulos da API, com chaves estáveis, e oferece os níveis sem acesso, leitura e leitura/escrita sem atrelar autorização a rótulos visuais.
 
@@ -45,6 +79,12 @@ Fluxo: requisição HTTP → `ValidationPipe` global → guard JWT, quando priva
 Controllers usam substantivos no plural sob `/api/v1`; ações que não forem CRUD devem permanecer explícitas e pequenas. O Swagger fica em `/docs`, fora do prefixo, e aceita Bearer Token.
 
 Testes unitários cobrem regras de autenticação e o bootstrap do administrador sem banco. Testes de integração futuros usarão um PostgreSQL isolado para constraints, migrations e endpoints completos. Casos críticos de autorização receberão testes e2e.
+
+### Auditoria
+
+Toda operação HTTP de criação, alteração, inativação ou exclusão (`POST`, `PUT`, `PATCH` e `DELETE`) concluída com sucesso passa pelo interceptor global de auditoria. O registro contém data e hora do servidor, usuário autenticado, ação, recurso, rota, identificador do registro, endereço IP e contexto da requisição. Senhas, hashes, tokens, segredos e cabeçalhos de autorização são sempre substituídos por `[REDACTED]` e nunca persistidos.
+
+Os registros de `audit_logs` são históricos e não possuem endpoints de alteração ou exclusão. A consulta administrativa oferece busca, filtros por usuário, ação, recurso e período, além de paginação no backend. Processos executados fora de uma requisição autenticada podem registrar o ator como sistema quando forem integrados explicitamente ao serviço de auditoria.
 
 ## Usuário, membro e permissões
 

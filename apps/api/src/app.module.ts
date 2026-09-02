@@ -13,6 +13,9 @@ import { GeographyModule } from "./geography/geography.module";
 import { PermissionsModule } from "./permissions/permissions.module";
 import { UserGroupsModule } from "./user-groups/user-groups.module";
 import { DepartmentsModule } from "./departments/departments.module";
+import { APP_INTERCEPTOR } from "@nestjs/core";
+import { AuditModule } from "./audit/audit.module";
+import { AuditInterceptor } from "./audit/audit.interceptor";
 
 @Module({
   imports: [
@@ -43,7 +46,9 @@ import { DepartmentsModule } from "./departments/departments.module";
     PermissionsModule,
     UserGroupsModule,
     DepartmentsModule,
+    AuditModule,
   ],
   controllers: [HealthController],
+  providers: [{ provide: APP_INTERCEPTOR, useClass: AuditInterceptor }],
 })
 export class AppModule {}

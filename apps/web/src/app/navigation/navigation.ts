@@ -1,7 +1,8 @@
 import type { AuthenticatedUser } from "../../features/auth/types/auth";
 
 export type PermissionAction = "view" | "create" | "update" | "delete";
-export type AdminView = "areas" | "churches" | "members" | "user-groups";
+export type AdminView =
+  "organization" | "areas" | "churches" | "members" | "user-groups" | "audit";
 
 export type NavigationItem = {
   id: AdminView;
@@ -9,6 +10,8 @@ export type NavigationItem = {
   path: string;
   resource: string;
   permissions: Record<PermissionAction, string>;
+  visible?: boolean;
+  viewPermissions?: string[];
 };
 
 export type NavigationCategory = {
@@ -23,11 +26,29 @@ export const navigationCatalog: NavigationCategory[] = [
     label: "Organização",
     items: [
       {
+        id: "organization",
+        label: "Áreas e igrejas",
+        path: "/admin/organization",
+        resource: "organization",
+        permissions: {
+          view: "areas.view",
+          create: "areas.create",
+          update: "areas.update",
+          delete: "areas.delete",
+        },
+        viewPermissions: ["areas.view", "churches.view"],
+      },
+      {
         id: "members",
         label: "Membros",
         path: "/admin/members",
         resource: "members",
-        permissions: { view: "members.view", create: "members.create", update: "members.update", delete: "members.delete" },
+        permissions: {
+          view: "members.view",
+          create: "members.create",
+          update: "members.update",
+          delete: "members.delete",
+        },
       },
       {
         id: "areas",
@@ -40,6 +61,7 @@ export const navigationCatalog: NavigationCategory[] = [
           update: "areas.update",
           delete: "areas.delete",
         },
+        visible: false,
       },
       {
         id: "churches",
@@ -52,6 +74,7 @@ export const navigationCatalog: NavigationCategory[] = [
           update: "churches.update",
           delete: "churches.delete",
         },
+        visible: false,
       },
     ],
   },
@@ -59,6 +82,18 @@ export const navigationCatalog: NavigationCategory[] = [
     id: "administration",
     label: "Administração",
     items: [
+      {
+        id: "audit",
+        label: "Auditoria",
+        path: "/admin/audit",
+        resource: "audit",
+        permissions: {
+          view: "audit.view",
+          create: "audit.create",
+          update: "audit.update",
+          delete: "audit.delete",
+        },
+      },
       {
         id: "user-groups",
         label: "Grupos de usuários",
@@ -76,7 +111,12 @@ export const navigationCatalog: NavigationCategory[] = [
 ];
 
 export function canAccessItem(user: AuthenticatedUser, item: NavigationItem) {
-  return user.isAdmin || user.permissions.includes(item.permissions.view);
+  return (
+    user.isAdmin ||
+    (item.viewPermissions ?? [item.permissions.view]).some((permission) =>
+      user.permissions.includes(permission),
+    )
+  );
 }
 
 export function canPerform(

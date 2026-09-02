@@ -11,6 +11,7 @@ import { PermissionModule } from "../permissions/entities/permission-module.enti
 import { RolePermission } from "../permissions/entities/role-permission.entity";
 import { UserChurchRole } from "../user-groups/entities/user-church-role.entity";
 import { Department } from "../departments/entities/department.entity";
+import { AuditLog } from "../audit/entities/audit-log.entity";
 
 const AppDataSource = new DataSource({
   type: "postgres",
@@ -31,6 +32,7 @@ const AppDataSource = new DataSource({
     RolePermission,
     UserChurchRole,
     Department,
+    AuditLog,
   ],
   migrations: ["src/database/migrations/*.ts"],
   synchronize: false,

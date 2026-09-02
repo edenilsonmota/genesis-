@@ -22,7 +22,9 @@ export function TopNavigation({
   const categories = navigationCatalog
     .map((category) => ({
       ...category,
-      items: category.items.filter((item) => canAccessItem(user, item)),
+      items: category.items.filter(
+        (item) => item.visible !== false && canAccessItem(user, item),
+      ),
     }))
     .filter((category) => category.items.length);
   return (
